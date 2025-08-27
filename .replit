@@ -2,10 +2,21 @@ run = ["bash", "-lc", "npm run dev"]
 
 [nix]
 channel = "stable-24_11"
-packages = ["cowsay"]
 
 [[ports]]
 localPort = 3001
 externalPort = 80
+
+[workflows]
+runButton = "Run"
+
+[[workflows.workflow]]
+name = "Run"
+author = 22514457
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
 
 
