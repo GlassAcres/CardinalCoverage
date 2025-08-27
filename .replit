@@ -1,4 +1,5 @@
-run = ["bash", "-lc", "npm run dev"]
+run = ["bash", "-lc", "npm i --silent && PORT=3001 npm run oneport"]
+entrypoint = "server/src/index.ts"
 
 [nix]
 channel = "stable-24_11"
@@ -17,6 +18,4 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
-
-
+args = "PORT=3001 npm run oneport"
