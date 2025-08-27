@@ -1,62 +1,96 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import AbsenceForm from "../components/AbsenceForm";
+import SeedControls from "../components/SeedControls";
+import PlanTable from "../components/PlanTable";
 
-const API = import.meta.env.VITE_API_BASE || "http://localhost:3001";
+const API = ""; // same-origin; works in one-port mode and with Vite proxy in dev
+
+type DayType = "A" | "B";
 
 export default function Planner() {
-  const [date, setDate] = useState<string>(new Date().toISOString().slice(0,10));
-  const [dayType, setDayType] = useState<"A"|"B">("A");
-  const [absent, setAbsent] = useState<string>(""); // comma separated teacher IDs (for MVP)
+  const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [dayType, setDayType] = useState<DayType>("A");
+  const [absent, setAbsent] = useState<string>(""); // comma-separated teacher IDs
   const [seed, setSeed] = useState<string>("");
   const [plan, setPlan] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [err, setErr] = useState<string | null>(null);
 
   async function buildNeeds() {
-    const absentIds = absent.split(",").map(s=>Number(s.trim())).filter(Boolean);
+    const absentIds = absent.split(",").map(s => Number(s.trim())).filter(Boolean);
     const r = await fetch(`${API}/api/plan/needs`, {
-      method:"POST", headers:{ "Content-Type":"application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ date, day_type: dayType, absent_teacher_ids: absentIds })
     });
+    if (!r.ok) throw new Error(`Needs failed: ${r.status}`);
     return r.json();
   }
 
-  async function compute(strategy:"greedy"|"hungarian") {
-    await buildNeeds();
-    const r = await fetch(`${API}/api/plan/compute`, {
-      method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ date, day_type: dayType, seed, strategy })
-    });
-    const data = await r.json(); setPlan(data);
+  async function compute(strategy: "greedy" | "hungarian") {
+    try {
+      setLoading(true);
+      setErr(null);
+      await buildNeeds();
+      const r = await fetch(`${API}/api/plan/compute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date, day_type: dayType, seed, strategy })
+      });
+      if (!r.ok) throw new Error(`Compute failed: ${r.status}`);
+      const data = await r.json();
+      setPlan(data);
+    } catch (e: any) {
+      setErr(e.message || String(e));
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function commit() {
     if (!plan) return;
-    const r = await fetch(`${API}/api/plan/commit`, {
-      method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ date, assignments: plan.assignments, seed })
-    });
-    alert("Committed: "+JSON.stringify(await r.json()));
+    try {
+      setLoading(true);
+      setErr(null);
+      const r = await fetch(`${API}/api/plan/commit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date, assignments: plan.assignments, seed })
+      });
+      if (!r.ok) throw new Error(`Commit failed: ${r.status}`);
+      const out = await r.json();
+      alert(`Committed: ${JSON.stringify(out)}`);
+    } catch (e: any) {
+      setErr(e.message || String(e));
+    } finally {
+      setLoading(false);
+    }
   }
 
-  return <div style={{padding:"1rem"}}>
-    <h2>Daily Coverage Planner</h2>
-    <div style={{display:"grid", gap:8, gridTemplateColumns:"repeat(5, 1fr)"}}>
-      <label>Date <input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
-      <label>Day
-        <select value={dayType} onChange={e=>setDayType(e.target.value as any)}>
-          <option>A</option><option>B</option>
-        </select>
-      </label>
-      <label>Absent Teacher IDs (comma) <input value={absent} onChange={e=>setAbsent(e.target.value)} placeholder="e.g. 3,7"/></label>
-      <label>Seed <input value={seed} onChange={e=>setSeed(e.target.value)} placeholder="optional seed"/></label>
-      <div style={{display:"flex", gap:8, alignItems:"end"}}>
-        <button onClick={()=>compute("greedy")}>Compute (Greedy)</button>
-        <button onClick={()=>compute("hungarian")}>Compute (Hungarian)</button>
-      </div>
-    </div>
+  return (
+    <div style={{ padding: "1rem" }}>
+      <h2>Daily Coverage Planner</h2>
 
-    {plan && <>
-      <h3>Assignments</h3>
-      <pre style={{background:"#f7f7f7", padding:12, overflow:"auto"}}>{JSON.stringify(plan.assignments, null, 2)}</pre>
-      <button onClick={commit}>Commit Plan</button>
-    </>}
-  </div>;
+      <AbsenceForm
+        date={date}
+        onDateChange={setDate}
+        dayType={dayType}
+        onDayTypeChange={setDayType}
+        absent={absent}
+        onAbsentChange={setAbsent}
+      />
+
+      <SeedControls
+        seed={seed}
+        onSeedChange={setSeed}
+        onComputeGreedy={() => compute("greedy")}
+        onComputeHungarian={() => compute("hungarian")}
+      />
+
+      {loading && <div style={{ marginTop: 10 }}>Working…</div>}
+      {err && <div style={{ marginTop: 10, color: "crimson" }}>{err}</div>}
+
+      <PlanTable plan={plan} onCommit={commit} />
+    </div>
+  );
 }

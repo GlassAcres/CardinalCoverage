@@ -1,19 +1,14 @@
 {
   "name": "cardinal-coverage",
   "private": true,
-  "workspaces": [
-    "server",
-    "web"
-  ],
+  "workspaces": ["server", "web"],
   "scripts": {
     "dev": "concurrently \"npm:dev:server\" \"npm:dev:web\"",
     "dev:server": "npm --workspace server run dev",
-    "dev:web": "npm --workspace web run dev"
+    "dev:web": "npm --workspace web run dev",
+    "oneport": "npm --workspace web run build && SERVE_WEB_DIST=1 npm --workspace server run dev"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
-  },
-  "dependencies": {
-    "dotenv": "^17.2.1"
   }
 }

@@ -2,9 +2,9 @@
   "name": "coverage-web",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview -p 5173"
+    "preview": "vite preview -p 5173 --host 0.0.0.0"
   },
   "dependencies": {
     "@supabase/auth-ui-react": "^0.4.7",
