@@ -1,8 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
-import { drizzle } from 'drizzle-orm/supabase';
+import { drizzle } from "drizzle-orm/node-postgres";
+import { createClient } from "@supabase/supabase-js";
+import pkg from "pg";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-export const supabase = createClient(url, serviceKey);
-export const db = drizzle(supabase);
+export const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
+export const pool = new pkg.Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
+export const db = drizzle(pool);

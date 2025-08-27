@@ -9,16 +9,20 @@
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
-    "next": "^13.5.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "drizzle-orm": "^0.30.0",
+    "@openai/agents": "^0.0.17",
+    "@openai/agents-openai": "^0.0.17",
     "@supabase/supabase-js": "^2.38.0",
-    "openai": "^4.0.0"
+    "csv-parse": "^5.5.0",
+    "drizzle-orm": "^0.30.0",
+    "munkres-js": "^1.2.2",
+    "next": "^13.5.0",
+    "pg": "^8.11.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "typescript": "^5.2.0",
     "@types/node": "^20.5.0",
-    "@types/react": "^18.2.21"
+    "@types/react": "^18.2.21",
+    "typescript": "^5.2.0"
   }
 }
