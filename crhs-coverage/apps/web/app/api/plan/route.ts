@@ -1,5 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { plan } from "@/agents/singleAgent";
 
 export async function POST(req: NextRequest) {
-  return NextResponse.json({ error: 'Not implemented' }, { status: 501 });
+  const { date, dayType, seed, method } = await req.json();
+  const result = await plan(date, dayType, seed, method);
+  return NextResponse.json(result);
 }
