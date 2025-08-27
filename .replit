@@ -1,6 +1,11 @@
-run = "cowsay Configure me!"
-entrypoint = "README.md"
+run = ["bash", "-lc", "npm run dev"]
 
 [nix]
-channel = "stable-24_05"
+channel = "stable-24_11"
 packages = ["cowsay"]
+
+[[ports]]
+localPort = 3001
+externalPort = 80
+
+
